@@ -1,0 +1,41 @@
+body {
+  background-color: black;
+  color: white;
+  font-family: monospace;
+  text-align: center;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* menu central bonito e minimalista */
+#menu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* botao simples e elegante */
+#startButton {
+  background: none;
+  border: 2px solid white;
+  color: white;
+  padding: 10px 20px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#startButton:hover {
+  background-color: white;
+  color: black;
+}
+
+/* area do jogo */
+#gameCanvas {
+  display: none;
+  background-color: black;
+  border: 2px solid white;
+  margin: auto;
+  margin-top: 40px;
+}

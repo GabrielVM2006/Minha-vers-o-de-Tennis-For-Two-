@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tennis for Two</title>
+  <style>
+    /* fundo */
+    body {
+      margin: 0;
+      background-color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      font-family: monospace;
+    }
+
+    /* menu inicial */
+    #menu {
+      text-align: center;
+    }
+
+    /* botao */
+    button {
+      background: none;
+      border: 2px solid white;
+      color: white;
+      padding: 10px 30px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: white;
+      color: black;
+    }
+
+    /* canvas */
+    canvas {
+      border: 2px solid white;
+      display: none;
+    }
+
+    /* placar */
+    #score {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 24px;
+      display: none;
+    }
+
+    .left {
+      position: absolute;
+      left: 40px;
+    }
+
+    .right {
+      position: absolute;
+      right: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div id="menu">
+    <h1>Tennis for Two</h1>
+    <p>W e S para o player 1 | Seta para cima e para baixo player 2</p>
+    <button id="startBtn">Iniciar</button>
+  </div>
+
+  <div id="score">
+    <span class="left" id="scoreP1">0</span>
+    <span class="right" id="scoreP2">0</span>
+  </div>
+
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const menu = document.getElementById("menu");
+    const scoreDiv = document.getElementById("score");
+    const scoreP1 = document.getElementById("scoreP1");
+    const scoreP2 = document.getElementById("scoreP2");
+
+    // tamanho da raquete
+    const paddleHeight = 84, paddleWidth = 10;
+
+    // posicao inicial das raquetes
+    let p1Y = canvas.height / 2 - paddleHeight / 2;
+    let p2Y = canvas.height / 2 - paddleHeight / 2;
+
+    // bola
+    let ballX = canvas.width / 2;
+    let ballY = canvas.height / 2;
+    let ballSpeedX = 4;
+    let ballSpeedY = 3;
+
+    // placar players
+    let score1 = 0;
+    let score2 = 0;
+
+    // teclas
+    let wPressed = false;
+    let sPressed = false;
+    let upPressed = false;
+    let downPressed = false;
+
+    document.getElementById("startBtn").onclick = () => {
+      menu.style.display = "none";
+      canvas.style.display = "block";
+      scoreDiv.style.display = "block";
+      gameLoop();
+    };
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "w") wPressed = true;
+      if (e.key === "s") sPressed = true;
+      if (e.key === "ArrowUp") upPressed = true;
+      if (e.key === "ArrowDown") downPressed = true;
+    });
+
+    document.addEventListener("keyup", (e) => {
+      if (e.key === "w") wPressed = false;
+      if (e.key === "s") sPressed = false;
+      if (e.key === "ArrowUp") upPressed = false;
+      if (e.key === "ArrowDown") downPressed = false;
+    });
+
+    function movePlayers() {
+      // mover raquete do player 1
+      if (wPressed) p1Y -= 6;
+      if (sPressed) p1Y += 6;
+      // mover raquete do player 2
+      if (upPressed) p2Y -= 6;
+      if (downPressed) p2Y += 6;
+
+      // limitar movimento raquete
+      if (p1Y < 0) p1Y = 0;
+      if (p1Y + paddleHeight > canvas.height) p1Y = canvas.height - paddleHeight;
+      if (p2Y < 0) p2Y = 0;
+      if (p2Y + paddleHeight > canvas.height) p2Y = canvas.height - paddleHeight;
+    }
+
+    function update() {
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+
+      // rebater bola cima e baixo
+      if (ballY <= 0 || ballY >= canvas.height) ballSpeedY = -ballSpeedY;
+
+      // colisao raquete player 1
+      if (ballX <= 20 && ballY > p1Y && ballY < p1Y + paddleHeight) {
+        ballSpeedX = -ballSpeedX;
+      }
+
+      // colisao raquete player 2
+      if (ballX >= canvas.width - 20 && ballY > p2Y && ballY < p2Y + paddleHeight) {
+        ballSpeedX = -ballSpeedX;
+      }
+
+      // pontuacao
+      // se bola sair pelo lado do player 1, player 2 ganha 1 ponto
+      if (ballX < 0) {
+        score2++;
+        resetBall();
+      }
+
+      // se bola sair pelo lado do player 2, player 1 ganha 1 ponto
+      if (ballX > canvas.width) {
+        score1++;
+        resetBall();
+      }
+
+      // atualizar placar
+      scoreP1.textContent = score1;
+      scoreP2.textContent = score2;
+    }
+
+    function resetBall() {
+      // volta bola pro meio
+      ballX = canvas.width / 2;
+      ballY = canvas.height / 2;
+      // muda direcao
+      ballSpeedX = -ballSpeedX;
+      ballSpeedY = 3 * (Math.random() > 0.5 ? 1 : -1);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "white";
+
+      // raquete player 1
+      ctx.fillRect(10, p1Y, paddleWidth, paddleHeight);
+      // raquete player 2
+      ctx.fillRect(canvas.width - 20, p2Y, paddleWidth, paddleHeight);
+      // bola
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function gameLoop() {
+      movePlayers();
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+  </script>
+</body>
+</html>
